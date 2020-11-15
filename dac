@@ -2,14 +2,14 @@
 #Coded by: Baibhav Anand Jha | Twitter: @spongebhav
 #Project link: https://github.com/baibhavanand/dac
 
-echo "
-█▀▄ █▀█ █▀▄▀█ ▄▀█ █ █▄░█   ▄▀█ █░█ ▄▀█ █ █░░ ▄▀█ █▄▄ █ █░░ █ ▀█▀ █▄█
-█▄▀ █▄█ █░▀░█ █▀█ █ █░▀█   █▀█ ▀▄▀ █▀█ █ █▄▄ █▀█ █▄█ █ █▄▄ █ ░█░ ░█░
+echo "	
+	█▀▄ █▀█ █▀▄▀█ ▄▀█ █ █▄░█   ▄▀█ █░█ ▄▀█ █ █░░ ▄▀█ █▄▄ █ █░░ █ ▀█▀ █▄█
+	█▄▀ █▄█ █░▀░█ █▀█ █ █░▀█   █▀█ ▀▄▀ █▀█ █ █▄▄ █▀█ █▄█ █ █▄▄ █ ░█░ ░█░
 
-█▀▀ █░█ █▀▀ █▀▀ █▄▀ █▀▀ █▀█
-█▄▄ █▀█ ██▄ █▄▄ █░█ ██▄ █▀▄
+	█▀▀ █░█ █▀▀ █▀▀ █▄▀ █▀▀ █▀█
+	█▄▄ █▀█ ██▄ █▄▄ █░█ ██▄ █▀▄
 
-	---Made With Love By - Baibhav | Twitter : @spongebhav---
+		--- </> With <3 By - Baibhav | Twitter : @spongebhav ---
 
 
 "
@@ -101,3 +101,10 @@ if [ "$list" != "" ]; then
 fi
 
 
+if [ "$domain" == "" ] && [ "$list" == "" ]; then
+echo "Usage:
+	-d : To specify domain name.
+	-l : To specify the text file containing the list of domain names.
+	-o : To specify file name to output the list of available domains.
+	-t : To specify a TLD. (ex: .com .org .net ,etc"
+fi
