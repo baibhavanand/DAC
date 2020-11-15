@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Authors: Baibhav Anand Jha
-# Documentation: github.com/baibhavanand/Fbuid
+# Documentation: git.io/domainchecker
 
 if [ "$(id -u)" != "0" ]; then
     echo "Run it as root"
