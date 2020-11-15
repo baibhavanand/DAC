@@ -3,4 +3,4 @@
 
 <h1 align="center"> I thank the following people for their contributions to this project.</h1>
 
-1. 
+1. <a href="https://github.com/anantamishra">anantamishra</a>
