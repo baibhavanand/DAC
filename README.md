@@ -40,7 +40,7 @@
 <pre>git clone https://github.com/baibhavanand/fbuid</pre>
 
 * Switch to **dac** directory:
-<pre>cd fbuid</pre>
+<pre>cd dac</pre>
 
 * Copy **dac** to /usr/local/bin
 <pre>sudo cp dac /usr/local/bin/</pre>
