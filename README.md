@@ -37,7 +37,7 @@
  </h2>
 
 * Download OR Clone the repository in your machine:
-<pre>git clone https://github.com/baibhavanand/fbuid</pre>
+<pre>git clone https://github.com/baibhavanand/DAC</pre>
 
 * Switch to **dac** directory:
 <pre>cd dac</pre>
