@@ -106,5 +106,6 @@ echo "Usage:
 	-d : To specify domain name.
 	-l : To specify the text file containing the list of domain names.
 	-o : To specify file name to output the list of available domains.
-	-t : To specify a TLD. (ex: .com .org .net ,etc"
+	-t : To specify a TLD. (ex: .com .org .net, etc)
+	"
 fi
