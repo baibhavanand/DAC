@@ -117,7 +117,7 @@ The Saved output will be like this:
   <strong>Thanks</strong>
  </h2>
 <p align="center">
-<img src="https://github.com/baibhavanand/dac/blob/main/images/Thank%20you.png" width="300" height="200"><br>
+<img src="https://raw.githubusercontent.com/baibhavanand/DAC/gh-pages/images/Thank%20you.png" width="300" height="200"><br>
 I would like to thank <a href="https://github.com/baibhavanand/dac/blob/main/thanks.md">the following people</a> for contributing to this project.</p>
 
 <br>
