@@ -7,6 +7,7 @@ if [ "$(id -u)" != "0" ]; then
 
 else
 	if [ "$1" = "--install" ] ; then
+		chmod 777 dac
 		cp dac /usr/local/bin
 		echo "Installation Successful"
 
