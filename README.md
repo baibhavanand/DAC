@@ -46,6 +46,22 @@
 <pre>sudo cp dac /usr/local/bin/</pre>
 
 <h2 align="center">
+  <strong>Docker Installation</strong>
+ </h2>
+
+* Download OR Clone the repository in your machine:
+<pre>git clone https://github.com/baibhavanand/DAC</pre>
+
+* Switch to **dac** directory:
+<pre>cd dac</pre>
+
+* Build **dac** container:
+<pre>docker build -t dac .</pre>
+
+* Run **dac** container:
+<pre>docker run dac dac</pre>
+
+<h2 align="center">
   <strong>Usage</strong>
  </h2>
  
