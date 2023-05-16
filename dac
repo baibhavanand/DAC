@@ -32,7 +32,7 @@ function available() {
 			sed2=$(echo "$sed1" | sed "s/.com.com/.com/g")
 		fi	
 	
-	check=`curl -s https://domains.revved.com/v1/domainStatus?domains=$sed2`
+	check=`curl -s https://domains.revved.com/v1/domainStatus?domains=,$sed2`
 			if [ "$check" == "" ]; then
 			echo "
 Something went Wrong.
@@ -58,7 +58,7 @@ function availablelist(){
 	fi		
 	echo
 	while read line; do
-		check=`curl -s https://domains.revved.com/v1/domainStatus?domains=$line`
+		check=`curl -s https://domains.revved.com/v1/domainStatus?domains=,$line`
 		if [ "$check" == "" ]; then
 			echo "
 Something went Wrong.
