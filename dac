@@ -107,8 +107,13 @@ function available() {
 			sed1=$(echo "$domain" | sed "s/$/$tld/g")
 			sed2=$(echo "$sed1" | sed "s/$tld$tld/$tld/g")
 	else
-			sed1=$(echo "$domain" | sed "s/$/.com/g")
-			sed2=$(echo "$sed1" | sed "s/.com.com/.com/g")
+			# Only append .com if the domain doesn't already have a TLD (no dot)
+			if echo "$domain" | grep -q "\."; then
+				sed2="$domain"
+			else
+				sed1=$(echo "$domain" | sed "s/$/.com/g")
+				sed2=$(echo "$sed1" | sed "s/.com.com/.com/g")
+			fi
 		fi
 
 		is_available "$sed2"
@@ -135,7 +140,15 @@ function availablelist(){
 	if [ "$tld" != "" ]; then
 		sed "s/$/$tld/g" "$list" | sed "s/$tld$tld/$tld/g" > "$tmpfile"
 	else
-		sed "s/$/.com/g" "$list" | sed "s/.com.com/.com/g" > "$tmpfile"
+		# Only append .com for domains without a TLD (no dot)
+		while read line; do
+			[ -z "$line" ] && echo "" >> "$tmpfile" && continue
+			if echo "$line" | grep -q "\."; then
+				echo "$line" >> "$tmpfile"
+			else
+				echo "${line}.com" >> "$tmpfile"
+			fi
+		done < "$list"
 	fi
 
 	echo
