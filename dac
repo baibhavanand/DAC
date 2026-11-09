@@ -2,10 +2,17 @@
 #Coded by: Baibhav Anand Jha | Twitter: @spongebhav
 #Project link: https://github.com/baibhavanand/dac
 
-echo "	
-	 ____       __        ___ 
+# Check for required tools
+if ! command -v whois &> /dev/null; then
+    echo "Error: 'whois' is required but not installed."
+    echo "Install it with: brew install whois (macOS) or apt install whois (Linux)"
+    exit 1
+fi
+
+echo "
+		 ____       __        ___
 	(  _ \     /__\      / __)
-	 )(_) )   /(__)\    ( (__ 
+	 )(_) )   /(__)\    ( (__
 	(____/   (__)(__)    \___)
 	Domain Availibility Checker
 
@@ -23,6 +30,78 @@ do
 	esac
 done
 
+# TLD-specific WHOIS servers (for TLDs where macOS whois doesn't follow referrals)
+function whois_with_tld_server() {
+    local domain="$1"
+    local tld_ext
+    tld_ext=$(echo "$domain" | awk -F. '{print tolower($NF)}')
+
+    case "$tld_ext" in
+        uk)  whois -h whois.nic.uk "$domain" 2>&1 ;;
+        *)   return 1 ;;  # no specific server known
+    esac
+}
+
+# RDAP fallback for TLDs where whois isn't accessible
+function rdap_check() {
+    local domain="$1"
+    local tld_ext
+    tld_ext=$(echo "$domain" | awk -F. '{print tolower($NF)}')
+    local rdap_url
+
+    case "$tld_ext" in
+        info) rdap_url="https://rdap.identitydigital.services/rdap/domain/" ;;
+        dev|app) rdap_url="https://pubapi.registry.google/rdap/domain/" ;;
+        *) return 2 ;;  # no RDAP fallback for this TLD
+    esac
+
+    local rdap_response
+    rdap_response=$(curl -s "$rdap_url$domain" 2>&1)
+    if [ -z "$rdap_response" ]; then
+        return 2
+    fi
+    if echo "$rdap_response" | grep -q '"ldhName"'; then
+        return 1  # taken (domain has an RDAP record)
+    else
+        return 0  # available (no RDAP record found)
+    fi
+}
+
+# is_available: returns 0 (available), 1 (taken), 2 (error/unknown)
+function is_available() {
+    local domain_to_check="$1"
+    local whois_output
+
+    # --- Step 1: Try default whois ---
+    whois_output=$(whois "$domain_to_check" 2>&1)
+
+    if [ -n "$whois_output" ]; then
+        if echo "$whois_output" | grep -qiE "No match for|Domain not found|NOT FOUND|No Data Found|no matching record|Status:.*free|Status:.*AVAILABLE"; then
+            return 0
+        fi
+        if echo "$whois_output" | grep -qiE "Creation Date|Registry Expiry Date|Registrar WHOIS|Updated Date"; then
+            return 1
+        fi
+    fi
+
+    # --- Step 2: Try TLD-specific whois server ---
+    local tld_whois
+    tld_whois=$(whois_with_tld_server "$domain_to_check" 2>/dev/null)
+    local tld_result=$?
+    if [ $tld_result -eq 0 ] && [ -n "$tld_whois" ]; then
+        if echo "$tld_whois" | grep -qiE "No match|Domain not found|NOT FOUND|No Data Found|no matching record"; then
+            return 0
+        fi
+        if echo "$tld_whois" | grep -qiE "Registered on|Creation Date|Registry Expiry|Registrar|Registrant"; then
+            return 1
+        fi
+    fi
+
+    # --- Step 3: Try RDAP fallback ---
+    rdap_check "$domain_to_check"
+    return $?
+}
+
 function available() {
 		if [ "$tld" != "" ]; then
 			sed1=$(echo "$domain" | sed "s/$/$tld/g")
@@ -30,54 +109,62 @@ function available() {
 	else
 			sed1=$(echo "$domain" | sed "s/$/.com/g")
 			sed2=$(echo "$sed1" | sed "s/.com.com/.com/g")
-		fi	
-	
-	check=`curl -s https://domains.revved.com/v1/domainStatus?domains=,$sed2`
-			if [ "$check" == "" ]; then
+		fi
+
+		is_available "$sed2"
+		local result=$?
+		if [ $result -eq 0 ]; then
+			echo -e "${sed2} is available."
+		elif [ $result -eq 1 ]; then
+			echo -e "${sed2} is taken."
+		else
 			echo "
 Something went Wrong.
 Possible reasons:
 	1. Network error.
 	2. TLD isn't supported."
-				exit;
-			fi
-    if [[ "${check}" =~ "true" ]]; then
-		  echo -e "${sed2} is available."
-		else
-		  echo -e "${sed2} is taken."
+			exit 1
 		fi
 }
 
 function availablelist(){
+	# Build a temp file with TLDs appended (avoids modifying the user's original file)
+	local tmpfile
+	tmpfile=$(mktemp /tmp/dac_list.XXXXXX) || { echo "Failed to create temp file"; exit 1; }
+
 	if [ "$tld" != "" ]; then
-		sed -i "s/$/$tld/g" "$list"
-		sed -i "s/$tld$tld/$tld/g" "$list"
+		sed "s/$/$tld/g" "$list" | sed "s/$tld$tld/$tld/g" > "$tmpfile"
 	else
-			sed -i "s/$/.com/g" "$list"
-			sed -i "s/.com.com/.com/g" "$list"
-	fi		
+		sed "s/$/.com/g" "$list" | sed "s/.com.com/.com/g" > "$tmpfile"
+	fi
+
 	echo
 	while read line; do
-		check=`curl -s https://domains.revved.com/v1/domainStatus?domains=,$line`
-		if [ "$check" == "" ]; then
+		# Skip empty lines
+		[ -z "$line" ] && continue
+
+		is_available "$line"
+		local result=$?
+		if [ $result -eq 0 ]; then
+			if [ "$output" != "" ]; then
+				echo -e "${line} is available."
+				echo -e "${line}" >> "$output"
+			else
+				echo -e "${line} is available."
+			fi
+		elif [ $result -eq 1 ]; then
+			echo -e "${line} is taken."
+		else
 			echo "
 Something went Wrong.
 Possible reasons:
 	1. Network error.
 	2. TLD isn't supported."
-				exit;
-			fi
-		if [[ "${check}" =~ "true" ]]; then
-		  if [ "$output" != "" ]; then
-		  	echo -e "${line} is available."
-		  	echo -e "${line}" >> $output
-		  	else
-		  		echo -e "${line} is available."
-		  	fi
-		else
-		  echo -e "${line} is taken."
+			rm -f "$tmpfile"
+			exit 1
 		fi
-done < $list
+	done < "$tmpfile"
+	rm -f "$tmpfile"
 }
 
 if [[ "$tld" != "."* ]] && [ "$tld" != "" ]; then
@@ -92,12 +179,6 @@ fi
 
 if [ "$list" != "" ]; then
 	availablelist
-
-	if [ "$tld" != "" ] && [ "$list" != "" ] && [ "$domain" == "" ]; then
-		sed -i "s/$tld//g" "$list"
-	else
-		sed -i "s/.com//g" "$list"
-	fi
 fi
 
 
